@@ -8,8 +8,10 @@ output:
     theme: spacelab
 ---
 
-## Setup
-The Behavioral Risk Factor Surveillance System (BRFSS) is an annual telephone survey in the United States. The BRFSS is designed to identify so-called risk factors in the adult population and report emerging trends. For example, respondents are asked about their diet and weekly physical activity, their HIV/AIDS status, possible tobacco use, immunization, health status, healthy days - health-related quality of life, health care access, inadequate sleep, hypertension awareness, cholesterol awareness, chronic health conditions, alcohol consumption, fruits and vegetables consumption, arthritis burden, and seatbelt use etc
+## Background
+The Behavioral Risk Factor Surveillance System (BRFSS) is an annual telephone survey in the United States. The BRFSS is designed to identify so-called risk factors in the adult population and report emerging trends. For example, respondents are asked about their diet and weekly physical activity, their HIV/AIDS status, possible tobacco use, immunization, health status, healthy days - health-related quality of life, health care access, inadequate sleep, hypertension awareness, cholesterol awareness, chronic health conditions, alcohol consumption, fruits and vegetables consumption, arthritis burden, and seatbelt use etc.
+
+##
 
 ### Load packages
 
@@ -28,8 +30,51 @@ load("brfss2013.RData")
 * * *
 
 ## Part 1: Data
-Data collection procedure is explained in brfss_codebook. The data were collected from United States' all 50 states, the District of Columbia, Puerto Rico, Guam and American Samoa, Federated States of Micronesia, and Palau, by conducting both landline telephone- and cellular telephone-based surveys. Disproportionate stratified sampling (DSS) has been used for the landline sample and the cellular telephone respondents are randomly selected with each having equal probability of selection. The dataset we are working on contains 330 variables for a total of 491, 775 samples in 2013. The missing values denoted by "NA"
+The data were collected from United States' all 50 states, the District of Columbia, Puerto Rico, Guam and American Samoa, Federated States of Micronesia, and Palau, by conducting both landline telephone- and cellular telephone-based surveys. Disproportionate stratified sampling (DSS) has been used for the landline sample and the cellular telephone respondents are randomly selected with each having equal probability of selection. The dataset we are working on contains 330 variables for a total of 491, 775 samples in 2013. The missing values denoted by "NA"
 
+```{r,cache=TRUE}
+table(brfss2013$iyear)
+```
+
+## Generalizability and Causality.
+
+Based on this information, I think that the results from the analysis done using the data collected, could be **generazible** to the population because the sample is done using in certain point a random selection, the size of the sample is large and because some of the possible bias in the sample is removed using the data weighting, but the relationship between the variables don´t describe **casuality**, because there is no random assignment of the people and because the study is done using a survey, in other words observing the characteristics of the U.S. residents.
+
+##veriables
+
+In order to investigate about this question, is neccesary to become familiar with the  variables,For this, I’m going to show the structure of each of these variables, with the following code
+
+I will use the following vairables
+<ol>
+<li> physhlth = Number Of Days Physical Health Not Good</li>        
+<li> poorhlth = Poor Physical Or Mental Health </li>           
+<li> genhlth =  Corresponds to General Health </li>                  
+<li> income2 =  Corresponds  Income Level </li> 
+<li> hlthpln1= Have Any Health Care Coverage </li> 
+<li> sex = Respondents Sex </li>
+<li> iyear =  Interview Year </li>
+</ol>
+
+
+```{r,cache=TRUE}
+brfss2013 %>% select(physhlth,poorhlth,genhlth,income2,sex,iyear,hlthpln1) %>% str()
+```
+
+
+We could see that the variables physhlth and poorhlth are both numeric with integer values, and that the variable like
+ <ul>
+<li>genhlth is a factor with 6 levels."Excellent" "Very good" "Good" "Fair" "Poor</li>
+<li>income2 is a factor with 8 levels,</li>
+<li>hlthpln1 is factor with 2 levels "Yes" "No",</li>
+<li>sex  is factor with 2 levels "Male"   "Female",</li>
+<li>iyear is factor with 2 levels  "2013" "2014",</li>
+</ul>
+
+Let´s see a summary for these variables.
+
+```{r,cache=TRUE}
+brfss2013 %>% select(physhlth,poorhlth,genhlth,income2,sex,iyear,hlthpln1) %>% summary()
+```
 
 * * *
 
@@ -37,10 +82,6 @@ Data collection procedure is explained in brfss_codebook. The data were collecte
 
 **Research quesion 1:**
 Does the distribution of the number of days in which physical and mental health was not good during the past 30 days differ by gender.
-
-```{r}
-summary(brfss2013$physhlth)
-```
 
 
 **Research quesion 2:**
@@ -55,7 +96,7 @@ Is there any association between income and health care coverage
 
 
 ```{r message=FALSE}
-ggplot(aes(x=physhlth, fill=sex), data = brfss2013[!is.na(brfss2013$sex), ]) +
+ggplot(aes(x= (physhlth), fill=sex), data = brfss2013[!is.na(brfss2013$sex), ]) +
   geom_histogram(bins=15, position = position_dodge()) + ggtitle('Number of Days Physical Health not Good in the Past 30 Days')
 
 ```
@@ -64,6 +105,8 @@ ggplot(aes(x=physhlth, fill=sex), data = brfss2013[!is.na(brfss2013$sex), ]) +
 ggplot(aes(x=poorhlth, fill=sex), data=brfss2013[!is.na(brfss2013$sex), ]) +
   geom_histogram(bins=15, position = position_dodge()) + ggtitle('Number of Days with Poor Physical Or Mental Health in the Past 30 Days')
 ```
+
+**conclusion** 
 
 The above two figures show the data distribution of how male and female responder to the number of days physical, mental and both health not good during the past 30 days. We can see that there were more number of female respondents than male respondents.
 
@@ -77,9 +120,10 @@ ggplot(aes(x=imonth, y=n, fill = genhlth), data = by_month[!is.na(by_month$genhl
 
 ```{r}
 by_month1 <- brfss2013 %>% filter(iyear=='2013') %>% group_by(imonth) %>% summarise(n=n())
-ggplot(aes(x=imonth, y=n), data=by_month1) + geom_bar(stat = 'identity',color="red",fill="green") + ggtitle('Number of Respondents by Month')
+ggplot(aes(x=imonth, y=n), data=by_month1) + geom_bar(stat = 'identity',color="red",fill="green") + ggtitle('Number of Respondents by Month')+theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
+**Conclusion** 
 I was trying to find out any exited pattern whether people respond their health condition differently in the different month. For example, are people more likely to say they are in good health in the spring or summer? It appears from graph that there was no obvious pattern.
 
 **Research quesion 3:**
@@ -89,6 +133,7 @@ plot(brfss2013$income2, brfss2013$hlthpln1,col=c("blue","green"), xlab = 'Income
 'Income Level versus Health Care Coverage')
 ```
 
+**Conclusion** 
 Above graph clearly shows that higher income respondents are more likely to have health care coverage then those of lower income respondents
 
 
